@@ -18,7 +18,7 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
+import { Add, Remove, CameraAlt } from '@mui/icons-material';
 import axios from 'axios';
 import Webcam from 'react-webcam';
 import Quagga from 'quagga';
@@ -37,6 +37,7 @@ const Item = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const webcamRef = useRef(null);
 
   useEffect(() => {
@@ -56,6 +57,7 @@ const Item = () => {
   const handleClose = () => {
     setOpen(false);
     setScanning(false);
+    setCameraError(false);
     Quagga.stop();
   };
 
@@ -107,7 +109,14 @@ const Item = () => {
   );
 
   const handleStartScanning = () => {
-    setScanning(true);
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(() => {
+        setScanning(true);
+        setCameraError(false);
+      })
+      .catch(() => {
+        setCameraError(true);
+      });
   };
 
   const handleBarcodeDetected = useCallback((result) => {
@@ -121,31 +130,39 @@ const Item = () => {
 
   useEffect(() => {
     if (scanning) {
-      Quagga.init({
-        inputStream: {
-          type: 'LiveStream',
-          constraints: {
-            facingMode: 'environment'
+      const initQuagga = () => {
+        Quagga.init({
+          inputStream: {
+            type: 'LiveStream',
+            constraints: {
+              facingMode: 'environment'
+            },
+            target: webcamRef.current.video
           },
-          target: webcamRef.current.video
-        },
-        decoder: {
-          readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
-        }
-      }, (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        Quagga.start();
-      });
+          decoder: {
+            readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
+          }
+        }, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          Quagga.start();
+        });
 
-      Quagga.onDetected(handleBarcodeDetected);
+        Quagga.onDetected(handleBarcodeDetected);
 
-      return () => {
-        Quagga.offDetected(handleBarcodeDetected);
-        Quagga.stop();
+        return () => {
+          Quagga.offDetected(handleBarcodeDetected);
+          Quagga.stop();
+        };
       };
+
+      if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+        initQuagga();
+      } else {
+        webcamRef.current.video.addEventListener('loadeddata', initQuagga);
+      }
     }
   }, [scanning, handleBarcodeDetected]);
 
@@ -259,10 +276,15 @@ const Item = () => {
               variant="contained"
               color="primary"
               onClick={handleStartScanning}
-              startIcon={<Add />}
+              startIcon={<CameraAlt />}
             >
               Scan Barcode
             </Button>
+          )}
+          {cameraError && (
+            <Typography color="error">
+              Camera access denied. Please allow camera access or enter the barcode manually.
+            </Typography>
           )}
         </DialogContent>
         <DialogActions>
