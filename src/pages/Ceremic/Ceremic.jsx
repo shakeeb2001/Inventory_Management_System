@@ -128,32 +128,35 @@ const Item = () => {
   }, [scanMode]);
 
   useEffect(() => {
-    if (scanning) {
-      Quagga.init({
-        inputStream: {
-          type: 'LiveStream',
-          constraints: {
-            facingMode: 'environment'
+    if (scanning && webcamRef.current) {
+      const video = webcamRef.current.video;
+      if (video.readyState === 4) {
+        Quagga.init({
+          inputStream: {
+            type: 'LiveStream',
+            constraints: {
+              facingMode: 'environment'
+            },
+            target: video
           },
-          target: webcamRef.current.video
-        },
-        decoder: {
-          readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
-        }
-      }, (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        Quagga.start();
-      });
+          decoder: {
+            readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
+          }
+        }, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          Quagga.start();
+        });
 
-      Quagga.onDetected(handleBarcodeDetected);
+        Quagga.onDetected(handleBarcodeDetected);
 
-      return () => {
-        Quagga.offDetected(handleBarcodeDetected);
-        Quagga.stop();
-      };
+        return () => {
+          Quagga.offDetected(handleBarcodeDetected);
+          Quagga.stop();
+        };
+      }
     }
   }, [scanning, handleBarcodeDetected]);
 
