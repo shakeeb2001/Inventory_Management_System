@@ -18,7 +18,7 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import { Add, Remove, Search } from '@mui/icons-material';
+import { Add, Remove } from '@mui/icons-material';
 import axios from 'axios';
 import Webcam from 'react-webcam';
 import Quagga from 'quagga';
@@ -37,7 +37,6 @@ const Item = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [scanning, setScanning] = useState(false);
-  const [scanMode, setScanMode] = useState(false);
   const webcamRef = useRef(null);
 
   useEffect(() => {
@@ -57,7 +56,6 @@ const Item = () => {
   const handleClose = () => {
     setOpen(false);
     setScanning(false);
-    setScanMode(false);
     Quagga.stop();
   };
 
@@ -108,55 +106,46 @@ const Item = () => {
     item.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleStartScanning = (mode) => {
-    setScanMode(mode);
+  const handleStartScanning = () => {
     setScanning(true);
   };
 
   const handleBarcodeDetected = useCallback((result) => {
-    if (scanMode === 'search') {
-      setSearchQuery(result.codeResult.code);
-    } else {
-      setItemData(prevItemData => ({
-        ...prevItemData,
-        code: result.codeResult.code
-      }));
-    }
+    setItemData(prevItemData => ({
+      ...prevItemData,
+      code: result.codeResult.code
+    }));
     setScanning(false);
-    setScanMode(false);
     Quagga.stop();
-  }, [scanMode]);
+  }, []);
 
   useEffect(() => {
-    if (scanning && webcamRef.current) {
-      const video = webcamRef.current.video;
-      if (video.readyState === 4) {
-        Quagga.init({
-          inputStream: {
-            type: 'LiveStream',
-            constraints: {
-              facingMode: 'environment'
-            },
-            target: video
+    if (scanning) {
+      Quagga.init({
+        inputStream: {
+          type: 'LiveStream',
+          constraints: {
+            facingMode: 'environment'
           },
-          decoder: {
-            readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
-          }
-        }, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          Quagga.start();
-        });
+          target: webcamRef.current.video
+        },
+        decoder: {
+          readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
+        }
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        Quagga.start();
+      });
 
-        Quagga.onDetected(handleBarcodeDetected);
+      Quagga.onDetected(handleBarcodeDetected);
 
-        return () => {
-          Quagga.offDetected(handleBarcodeDetected);
-          Quagga.stop();
-        };
-      }
+      return () => {
+        Quagga.offDetected(handleBarcodeDetected);
+        Quagga.stop();
+      };
     }
   }, [scanning, handleBarcodeDetected]);
 
@@ -170,20 +159,15 @@ const Item = () => {
           Add Item
         </Button>
       </Box>
-      <Box display="flex" alignItems="center">
-        <TextField
-          margin="normal"
-          label="Search by Item Code"
-          type="text"
-          fullWidth
-          value={searchQuery}
-          onChange={handleSearchChange}
-          style={{ marginTop: 20, marginBottom: 20 }}
-        />
-        <IconButton color="primary" onClick={() => handleStartScanning('search')}>
-          <Search />
-        </IconButton>
-      </Box>
+      <TextField
+        margin="normal"
+        label="Search by Item Code"
+        type="text"
+        fullWidth
+        value={searchQuery}
+        onChange={handleSearchChange}
+        style={{ marginTop: 20, marginBottom: 20 }}
+      />
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Item</DialogTitle>
@@ -251,7 +235,7 @@ const Item = () => {
             value={itemData.sellingPrice}
             onChange={handleChange}
           />
-          {scanning && scanMode === 'add' ? (
+          {scanning ? (
             <Box position="relative">
               <Webcam
                 ref={webcamRef}
@@ -274,7 +258,7 @@ const Item = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => handleStartScanning('add')}
+              onClick={handleStartScanning}
               startIcon={<Add />}
             >
               Scan Barcode
@@ -328,36 +312,6 @@ const Item = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      {scanning && scanMode === 'search' && (
-        <Dialog open={scanning} onClose={handleClose}>
-          <DialogTitle>Scan Barcode to Search</DialogTitle>
-          <DialogContent>
-            <Box position="relative">
-              <Webcam
-                ref={webcamRef}
-                audio={false}
-                screenshotFormat="image/jpeg"
-                width="100%"
-                height="100%"
-              />
-              <Box
-                position="absolute"
-                top="50%"
-                left="0"
-                right="0"
-                height="2px"
-                bgcolor="red"
-                zIndex="10"
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="secondary">
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
     </Container>
   );
 };
