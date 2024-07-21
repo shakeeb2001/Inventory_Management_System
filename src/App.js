@@ -12,6 +12,7 @@ import Fan from './pages/Electrics/fans/fans'
 import Blender from './pages/Electrics/blender/blenders'
 import SoundSystems from './pages/Electrics/soundSystem/soundSystem'
 import Torch from './pages/Electrics/Torch/torchs'
+import Pay from './pages/pay'
 
 import LoginForm from './pages/login';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -51,6 +52,7 @@ const AppContent = () => {
          <Route path="/ceramic" element={<Ceremic />} />
          <Route path="/plastic-metal" element={<PlasticMetal />} />
          <Route path="/electric/torchs" element={<Torch />} />
+         <Route path="/pay" element={<Pay />} />
       </Routes>
     </>
   );
