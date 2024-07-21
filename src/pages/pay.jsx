@@ -43,7 +43,8 @@ const Pay = () => {
     ricecooker: 'https://fancy-palace-backend.vercel.app/ricecooker',
     soundsystem: 'https://fancy-palace-backend.vercel.app/soundsystem',
     torch: 'https://fancy-palace-backend.vercel.app/torch',
-    'plastic-metal': 'https://fancy-palace-backend.vercel.app/plastic-metal'
+    'plastic-metal': 'https://fancy-palace-backend.vercel.app/plastic-metal',
+    ceramic: 'https://fancy-palace-backend.vercel.app/api/ceremic'
   };
 
   useEffect(() => {
@@ -167,7 +168,81 @@ const Pay = () => {
   };
 
   const handlePrintInvoice = () => {
-    window.print();
+    const invoiceWindow = window.open('', 'PRINT', 'height=600,width=800');
+    invoiceWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+            }
+            .header h1 {
+              margin: 0;
+            }
+            .header p {
+              margin: 5px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            table, th, td {
+              border: 1px solid black;
+            }
+            th, td {
+              padding: 10px;
+              text-align: left;
+            }
+            .total {
+              text-align: right;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Fancy Palace</h1>
+            <p>No. 17, Beliatte Rd, Dickwella, Sri Lanka</p>
+            <p>Phone - 077 9697 099</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cart.map(item => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${item.quantity}</td>
+                  <td>Rs. ${item.sellingPrice}.00</td>
+                  <td>Rs. ${item.sellingPrice * item.quantity}.00</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="total">
+            <strong>Total: Rs. ${calculateTotal()}.00</strong>
+          </div>
+        </body>
+      </html>
+    `);
+    invoiceWindow.document.close();
+    invoiceWindow.focus();
+    invoiceWindow.print();
+    invoiceWindow.close();
   };
 
   const handleBackToItems = () => {
