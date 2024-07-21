@@ -41,7 +41,7 @@ const Item = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/blenders');
+      const response = await axios.get('https://fancy-palace-backend.vercel.app/api/blender');
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -61,7 +61,7 @@ const Item = () => {
 
   const handleAddItem = async () => {
     try {
-      const response = await axios.post('http://localhost:4000/api/blenders', itemData);
+      const response = await axios.post('https://fancy-palace-backend.vercel.app/api/blender', itemData);
       setItems([...items, response.data]);
       setItemData({
         name: '',
@@ -80,7 +80,7 @@ const Item = () => {
 
   const handleDecreaseQuantity = async (code) => {
     try {
-      const response = await axios.patch(`http://localhost:4000/api/blenders/${code}/decrease`);
+      const response = await axios.patch(`https://fancy-palace-backend.vercel.app/api/blender/${code}/decrease`);
       const updatedItems = items.map(item =>
         item.code === code ? response.data : item
       );
