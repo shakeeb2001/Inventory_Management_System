@@ -41,7 +41,7 @@ const Item = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/iron');
+      const response = await axios.get('https://fancy-palace-backend.vercel.app/api/iron');
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -61,7 +61,7 @@ const Item = () => {
 
   const handleAddItem = async () => {
     try {
-      const response = await axios.post('http://localhost:4000/api/iron', itemData);
+      const response = await axios.post('https://fancy-palace-backend.vercel.app/api/iron', itemData);
       setItems([...items, response.data]);
       setItemData({
         name: '',
