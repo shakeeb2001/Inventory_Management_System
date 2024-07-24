@@ -18,11 +18,12 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
+import { Add, Remove, Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
 
 const Item = () => {
   const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [items, setItems] = useState([]);
   const [itemData, setItemData] = useState({
     name: '',
@@ -34,6 +35,7 @@ const Item = () => {
     sellingPrice: ''
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentItemCode, setCurrentItemCode] = useState('');
 
   useEffect(() => {
     fetchItems();
@@ -41,15 +43,27 @@ const Item = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('https://fancy-palace-backend.vercel.app/api/soundsystem');
+      const response = await axios.get('https://fancy-palace-backend.vercel.app/api/torch');
       setItems(response.data);
     } catch (error) {
-      console.error('Error fetching items:', error);
+      console.error('Error fetching items:', error.message);
     }
   };
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setEditMode(false);
+    setItemData({
+      name: '',
+      code: '',
+      quantity: '',
+      costCode: '',
+      costPrice: '',
+      taggedPrice: '',
+      sellingPrice: ''
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,33 +75,53 @@ const Item = () => {
 
   const handleAddItem = async () => {
     try {
-      const response = await axios.post('https://fancy-palace-backend.vercel.app/api/soundsystem', itemData);
+      const response = await axios.post('https://fancy-palace-backend.vercel.app/api/torch', itemData);
       setItems([...items, response.data]);
-      setItemData({
-        name: '',
-        code: '',
-        quantity: '',
-        costCode: '',
-        costPrice: '',
-        taggedPrice: '',
-        sellingPrice: ''
-      });
       handleClose();
     } catch (error) {
-      console.error('Error adding item:', error);
+      console.error('Error adding item:', error.message);
+    }
+  };
+
+  const handleEditItem = async () => {
+    try {
+      const response = await axios.put(`https://fancy-palace-backend.vercel.app/api/torch/${currentItemCode}`, itemData);
+      const updatedItems = items.map(item =>
+        item.code === currentItemCode ? response.data : item
+      );
+      setItems(updatedItems);
+      handleClose();
+    } catch (error) {
+      console.error('Error updating item:', error.message);
+    }
+  };
+
+  const handleDeleteItem = async (code) => {
+    try {
+      await axios.delete(`https://fancy-palace-backend.vercel.app/api/torch/${code}`);
+      setItems(items.filter(item => item.code !== code));
+    } catch (error) {
+      console.error('Error deleting item:', error.message);
     }
   };
 
   const handleDecreaseQuantity = async (code) => {
     try {
-      const response = await axios.patch(`https://fancy-palace-backend.vercel.app/api/soundsystem/${code}/decrease`);
+      const response = await axios.patch(`https://fancy-palace-backend.vercel.app/api/torch/${code}/decrease`);
       const updatedItems = items.map(item =>
         item.code === code ? response.data : item
       );
       setItems(updatedItems);
     } catch (error) {
-      console.error('Error decreasing quantity:', error);
+      console.error('Error decreasing quantity:', error.message);
     }
+  };
+
+  const handleEditClick = (item) => {
+    setItemData(item);
+    setCurrentItemCode(item.code);
+    setEditMode(true);
+    setOpen(true);
   };
 
   const handleSearchChange = (e) => {
@@ -101,7 +135,7 @@ const Item = () => {
   return (
     <Container style={{ marginTop: '100px' }}>
       <Typography variant="h4" gutterBottom>
-        Sound Systems
+        Torches
       </Typography>
       <Box display="flex" justifyContent="flex-end" marginBottom={2}>
         <Button variant="contained" color="primary" onClick={handleOpen} startIcon={<Add />}>
@@ -119,7 +153,7 @@ const Item = () => {
       />
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add New Item</DialogTitle>
+        <DialogTitle>{editMode ? 'Edit Item' : 'Add New Item'}</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
@@ -138,6 +172,7 @@ const Item = () => {
             name="code"
             value={itemData.code}
             onChange={handleChange}
+            disabled={editMode}
           />
           <TextField
             margin="dense"
@@ -189,8 +224,8 @@ const Item = () => {
           <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddItem} color="primary">
-            Add
+          <Button onClick={editMode ? handleEditItem : handleAddItem} color="primary">
+            {editMode ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -225,6 +260,18 @@ const Item = () => {
                     onClick={() => handleDecreaseQuantity(item.code)}
                   >
                     <Remove />
+                  </IconButton>
+                  <IconButton
+                    color="secondary"
+                    onClick={() => handleEditClick(item)}
+                  >
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDeleteItem(item.code)}
+                  >
+                    <Delete />
                   </IconButton>
                 </TableCell>
               </TableRow>
