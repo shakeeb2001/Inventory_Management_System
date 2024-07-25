@@ -431,11 +431,11 @@ const Pay = () => {
     fans: 'https://fancy-palace-backend.vercel.app/api/fan',
     gascooker: 'https://fancy-palace-backend.vercel.app/api/gascooker',
     heaterjug: 'https://fancy-palace-backend.vercel.app/api/heaterjug',
-    iron: 'https://fancy-palace-backend.vercel.app/iron',
-    ricecooker: 'https://fancy-palace-backend.vercel.app/ricecooker',
-    soundsystem: 'https://fancy-palace-backend.vercel.app/soundsystem',
-    torch: 'https://fancy-palace-backend.vercel.app/torch',
-    metal: 'https://fancy-palace-backend.vercel.app/plastic-metal',
+    iron: 'https://fancy-palace-backend.vercel.app/api/iron',
+    ricecooker: 'https://fancy-palace-backend.vercel.app/api/ricecooker',
+    soundsystem: 'https://fancy-palace-backend.vercel.app/api/soundsystem',
+    torch: 'https://fancy-palace-backend.vercel.app/api/torch',
+    metal: 'https://fancy-palace-backend.vercel.app/api/plastic-metal',
     ceramic: 'https://fancy-palace-backend.vercel.app/api/ceremic'
   };
 
