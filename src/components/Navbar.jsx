@@ -50,7 +50,6 @@ const Navbar = () => {
     <AppBar position="fixed">
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Fancy Palace
         </Typography>
         <Box>
           <Button color="inherit" component={Link} to="/">

@@ -94,7 +94,7 @@ const LoginForm = () => {
         minHeight="100vh"
       >
         <Typography variant="h4" gutterBottom>
-          Fancy palace
+          Sign In
         </Typography>
         {message && <Typography color="error" gutterBottom>{message}</Typography>}
         <form onSubmit={handleLogin} style={{ width: '100%' }}>
